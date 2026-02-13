@@ -27,98 +27,64 @@ class EnvioPedidoBejermanService
 
             $pedido->update(['estado_envio_bejerman' => 'enviando']);
 
-            DB::connection('bejerman')->transaction(function () use ($pedido) {
+            $cabeceraId = null;
 
-                DB::connection('bejerman')
-                    ->table('CabVenta')
-                    ->insert([
-                        'cveemp_Codigo' => 'JOYR',
-                        'cvesuc_Cod' => ' ',
+            DB::connection('bejerman')->transaction(function () use ($pedido, &$cabeceraId) {
 
-                        'cve_CodCli' => $pedido->user->bejerman_cliente_cod,
-                        'cvecli_CodIN' => $pedido->user->bejerman_cliente_cod,
-                        'cvecli_RazSoc' => $pedido->user->razon_social ?? 'Cliente',
-                        'cvecli_CUIT' => $pedido->user->cuit,
-                        'cvecli_NroIB' => ' ',
+                // ✅ INSERT con OUTPUT para obtener el ID
+                $resultado = DB::connection('bejerman')->select("
+                    INSERT INTO CabVenta (
+                        cveemp_Codigo, cvesuc_Cod, cve_CodCli, cvecli_CodIN, cvecli_RazSoc,
+                        cvecli_CUIT, cvecli_NroIB, cve_NroCuota, cveptr_Cod, cvepre_Cod,
+                        cve_CodPvt, cvepvt_CodIN, cve_Letra, cvetco_Cod, cve_Nro, cvetic_Cod,
+                        cve_NroHasta, cve_FEmision, cve_HEmision, cve_FContab, cve_FecMod,
+                        cve_IncluDDJJ, cve_Orig, cve_Circuito, cve_MarcaCdoCtaCteBcoTarj,
+                        cve_PasajeCG, cve_PasadoCG, cve_OrigenComp, cve_CodApe, cveusu_Codigo,
+                        cve_Convert, cve_EsDifCambio, cvemon_Codigo, cvemcot_Cotiza,
+                        cvemon_CodigoCC, cvemtca_CodigoCC, cvemcot_CotizaCC, cve_ImpMonLoc,
+                        cve_ImpMonCC, cve_ImpMonEmis, cve_SaldoMonLoc, cve_SaldoMonCC,
+                        cvecvt_Cod, cve_FVto, cve_PorcCuotaComp, cve_CoefFinImpl,
+                        cve_FCCreditoAsoc, cve_PasadoACC, cve_Anulado, cvepai_Cod,
+                        cve_Motivo, cvesiv_Cod, cvetdc_Cod, cveprv_CodigoIB, cveprv_Codigo,
+                        cveven_Cod, cve_ConClaus, cvedco_Cod, cvedc1_Cod, cvedc2_Cod,
+                        cvetal_Cod, cveemp_CodigoSCV, cvesuc_CodSCV, cvertd_MaxLinDet
+                    )
+                    OUTPUT INSERTED.cve_ID
+                    VALUES (
+                        'JOYR', ' ', ?, ?, ?, ?, ' ', ' ', 'VEN', ' ',
+                        '00003', '00003', 'X', 'NP', '00000001', 'B', ' ',
+                        GETDATE(), GETDATE(), GETDATE(), GETDATE(),
+                        0, 'O', 'V', '2', 'V', 'N', 'E', ' ', 'WEB',
+                        ' ', 'N', '1', 1, '1', 'UNI', 1, ?, ?, ?, ?, ?,
+                        '2', GETDATE(), 1, 0, 0, 0, 0, 'ARG', '',
+                        '1', '1', '002', '002', 'JOY', '0', '2', 'REP', 'CMOT',
+                        'FAE', 'JOYR', ' ', 0
+                    )
+                ", [
+                    $pedido->user->bejerman_cliente_cod,
+                    $pedido->user->bejerman_cliente_cod,
+                    $pedido->user->razon_social ?? 'Cliente',
+                    $pedido->user->cuit,
+                    $pedido->total,
+                    $pedido->total,
+                    $pedido->total,
+                    $pedido->total,
+                    $pedido->total,
+                ]);
 
-                        'cve_NroCuota' => ' ',
-                        'cveptr_Cod' => 'VEN',
-                        'cvepre_Cod' => ' ',
-                        'cve_CodPvt' => '00003',
-                        'cvepvt_CodIN' => '00003',
-                        'cve_Letra' => 'X',
-                        'cvetco_Cod' => 'NP',
-                        'cve_Nro' => '00000001',
-                        'cvetic_Cod' => 'B',
-                        'cve_NroHasta' => ' ',
+                $cabeceraId = $resultado[0]->cve_ID;
 
-                        'cve_FEmision' => now(),
-                        'cve_HEmision' => now(),
-                        'cve_FContab' => now(),
-                        'cve_FecMod' => now(),
-
-                        'cve_IncluDDJJ' => 0,
-                        'cve_Orig' => 'O',
-                        'cve_Circuito' => 'V',
-                        'cve_MarcaCdoCtaCteBcoTarj' => '2',
-                        'cve_PasajeCG' => 'V',
-                        'cve_PasadoCG' => 'N',
-                        'cve_OrigenComp' => 'E',
-                        'cve_CodApe' => ' ',
-                        'cveusu_Codigo' => 'WEB',
-                        'cve_Convert' => ' ',
-                        'cve_EsDifCambio' => 'N',
-
-                        'cvemon_Codigo' => '1',
-                        'cvemcot_Cotiza' => 1,
-                        'cvemon_CodigoCC' => '1',
-                        'cvemtca_CodigoCC' => 'UNI',
-                        'cvemcot_CotizaCC' => 1,
-                        'cve_ImpMonLoc' => $pedido->total,
-                        'cve_ImpMonCC' => $pedido->total,
-                        'cve_ImpMonEmis' => $pedido->total,
-                        'cve_SaldoMonLoc' => $pedido->total,
-                        'cve_SaldoMonCC' => $pedido->total,
-                        'cvecvt_Cod' => '2',
-                        'cve_FVto' => now(),
-                        'cve_PorcCuotaComp' => 1,
-                        'cve_CoefFinImpl' => 0,
-                        'cve_FCCreditoAsoc' => 0,
-                        'cve_PasadoACC' => 0,
-                        'cve_Anulado' => 0,
-                        'cvepai_Cod' => 'ARG',
-                        'cve_Motivo' => '',
-                        'cvesiv_Cod' => '1',
-                        'cvetdc_Cod' => '1',
-                        'cveprv_CodigoIB' => '002',
-                        'cveprv_Codigo' => '002',
-                        'cveven_Cod' => 'JOY',
-                        'cve_ConClaus' => '0',
-                        'cvedco_Cod' => '2',
-                        'cvedc1_Cod' => 'REP',
-                        'cvedc2_Cod' => 'CMOT',
-                        'cvetal_Cod' => 'FAE',
-                        'cveemp_CodigoSCV' => 'JOYR',
-                        'cvesuc_CodSCV' => ' ',
-                        'cvertd_MaxLinDet' => 0,
-                    ]);
-
-
-                $cabeceraId = DB::connection('bejerman')
-    ->select("SELECT CAST(IDENT_CURRENT('CabVenta') AS INT) as id")[0]->id;
-
-                // ✅ lo que encontraste en la DB
+                // Partida por defecto
                 $partidaDefault = '10-2021';
 
                 $reng = 1;
                 foreach ($pedido->productos as $item) {
-                    // ✅ Buscar el artículo en Bejerman para obtener los códigos completos
+                    // Buscar artículo en Bejerman
                     $articuloBej = DB::connection('bejerman')
                         ->table('Articulos')
                         ->where('art_CodGen', trim($item->producto->code))
                         ->first();
 
-                    // Si no existe el artículo, usar valores por defecto
                     $codGen = $articuloBej ? trim($articuloBej->art_CodGen) : trim(mb_substr($item->producto->code ?? ('PROD-' . $item->producto_id), 0, 20));
                     $codEle1 = $articuloBej ? trim($articuloBej->art_CodEle1) : ' ';
                     $codEle2 = $articuloBej ? trim($articuloBej->art_CodEle2) : ' ';
@@ -130,31 +96,22 @@ class EnvioPedidoBejermanService
                         'ivesuc_Cod' => ' ',
                         'ivecve_ID' => $cabeceraId,
                         'ive_NReng' => $reng,
-
                         'ive_FContab' => now(),
                         'ive_FDDJJ' => now(),
                         'ive_IncluDDJJ' => 0,
                         'ive_tipoIt' => 'A',
-
-                        // ✅ USAR CÓDIGOS COMPLETOS DEL ARTÍCULO
                         'iveart_CodGen' => $codGen,
                         'iveart_CodEle1' => $codEle1,
                         'iveart_CodEle2' => $codEle2,
                         'iveart_CodEle3' => $codEle3,
-
                         'ivecon_Cod' => 'NC',
-
-                        // ✅ DESCRIPCIÓN COMPLETA
                         'ive_Desc' => $desc,
                         'ive_TipoArt' => '1',
                         'ive_TipoConc' => ' ',
-
                         'ive_CantUM1' => $item->cantidad,
                         'ive_CantUM2' => 0,
-
                         'ive_NetoLoc' => $item->precio_unitario ?? 0,
                         'ive_NetoCC' => $item->precio_unitario ?? 0,
-
                         'ive_TipoTasa' => '1',
                         'ive_TInsc' => 0,
                         'ive_TNoInsc' => 0,
@@ -164,7 +121,6 @@ class EnvioPedidoBejermanService
                         'ive_INoInscCC' => 0,
                         'ive_INoGraLoc' => 0,
                         'ive_INoGraCC' => 0,
-
                         'ive_TotDtoArtLoc' => 0,
                         'ive_TotDtoArtCC' => 0,
                         'ive_TotDtoFinLoc' => 0,
@@ -173,15 +129,12 @@ class EnvioPedidoBejermanService
                         'ive_TotDtoComCC' => 0,
                         'ive_TotDtoPieLoc' => 0,
                         'ive_TotDtoPieCC' => 0,
-
                         'ive_PrCosto' => 0,
                         'ive_PasadoACC' => 0,
                         'ive_Kit' => ' ',
                         'ive_RengKit' => 0,
                         'ive_BUso' => 'N',
-
                         'ivestp_Partida' => $partidaDefault,
-
                         'ivecve_FEmision' => now(),
                         'ivecve_HEmision' => now(),
                         'iveptr_Cod' => 'VEN',
@@ -222,7 +175,7 @@ class EnvioPedidoBejermanService
 
             return [
                 'success' => true,
-                'bejerman_id' => $pedido->fresh()->bejerman_id,
+                'bejerman_id' => $cabeceraId,
             ];
         } catch (\Exception $e) {
 
