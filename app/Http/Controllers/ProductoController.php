@@ -186,7 +186,10 @@ class ProductoController extends Controller
         $carrito = Cart::content();
 
         $query = Producto::with(['imagenes', 'marca', 'modelos', 'categoria'])
-    ->orderByRaw("CASE WHEN productos.precio IS NULL OR productos.precio <= 0 THEN 1 ELSE 0 END ASC")
+    ->orderByRaw("CASE 
+        WHEN productos.precio IS NULL OR productos.precio <= 0 THEN 1 
+        ELSE 0 
+    END ASC")
     ->orderBy('order', 'asc');
 
 
