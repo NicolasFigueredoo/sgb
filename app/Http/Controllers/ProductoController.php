@@ -184,13 +184,19 @@ class ProductoController extends Controller
 
         $qty = $request->input('qty', 1); // Valor por defecto para qty
         $carrito = Cart::content();
+$query = Producto::with(['imagenes', 'marca', 'modelos', 'categoria'])
+    // Tiene precio válido
+    ->whereNotNull('precio')
+    ->where('precio', '>', 0)
 
-        $query = Producto::with(['imagenes', 'marca', 'modelos', 'categoria'])
-    ->orderByRaw("CASE 
-        WHEN productos.precio IS NULL OR productos.precio <= 0 THEN 1 
-        ELSE 0 
-    END ASC")
+    // Tiene categoría
+    ->whereNotNull('categoria_id')
+
+    // Tiene al menos un modelo relacionado
+    ->whereHas('modelos')
+
     ->orderBy('order', 'asc');
+
 
 
         if ($request->filled('categoria')) {
