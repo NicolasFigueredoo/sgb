@@ -56,33 +56,76 @@
 
                     </div>
 
-                    <!-- Product Info -->
-                    <div class="w-full  flex flex-col min-h-full justify-between max-sm:w-full max-sm:mt-6">
-                        <div>
-                            <h3 class="text-primary-orange text-[16px] font-bold uppercase ">
-                                {{$producto->categoria->name}}
-                            </h3>
-                            <h1
-                                class="text-[28px] font-semibold leading-[1] max-sm:text-xl max-sm:leading-tight border-b  pb-4">
-                                {{ $producto->name }}
-                            </h1>
+              <!-- Product Info -->
+<div class="w-full flex flex-col min-h-full justify-between max-sm:w-full max-sm:mt-6">
+    <div>
+        <h3 class="text-primary-orange text-[16px] font-bold uppercase">
+            {{$producto->categoria->name}}
+        </h3>
+        <h1 class="text-[28px] font-semibold leading-[1] max-sm:text-xl max-sm:leading-tight pb-4">
+            {{ $producto->name }}
+        </h1>
+        
+        <p class="text-gray-600 text-[16px] mb-6 pb-6 border-b">{{ $producto->code }}</p>
+        
+        <!-- ✅ CARACTERÍSTICAS -->
+        <div class="mb-6">
+            <h2 class="text-[16px] font-bold mb-4 uppercase">Características</h2>
+            
+            <div class="flex flex-col">
 
-                            <div class="flex flex-col w-full gap-4 max-sm:py-8">
+                    @if ($producto->code_oem)
+                <div class="grid grid-cols-2 gap-4 py-3 border-b border-gray-100">
+                    <div class="text-[16px]">Codigo Alternativo</div>
+                    <div class="text-[16px] text-gray-700">{{ $producto->code_oem }}</div>
+                </div>
+                @endif
 
+                <!-- Descripción Técnica -->
+                @if ($producto->name)
+                <div class="grid grid-cols-2 gap-4 py-3 border-b border-gray-100">
+                    <div class="text-[16px]">Descripción Técnica</div>
+                    <div class="text-[16px] text-gray-700">{{ $producto->name }}</div>
+                </div>
+                @endif
+                
+                <!-- Código de Barras -->
+                @if ($producto->codigo_barras)
+                <div class="grid grid-cols-2 gap-4 py-3 border-b border-gray-100">
+                    <div class="text-[16px]">Código de Barras</div>
+                    <div class="text-[16px] text-gray-700">{{ $producto->codigo_barras }}</div>
+                </div>
+                @endif
+                
+                <!-- Unidades por Pack -->
+                @if ($producto->unidad_pack > 1)
+                <div class="grid grid-cols-2 gap-4 py-3">
+                    <div class="text-[16px]">Unidades por Pack</div>
+                    <div class="text-[16px] font-semibold text-primary-orange">{{ $producto->unidad_pack }} unidades</div>
+                </div>
+                @endif
+            </div>
+        </div>
+        
+        <!-- Descripción adicional -->
+        @if ($producto->desc)
+        <div class="mb-6">
+            <p class="text-[16px] text-gray-700">{{$producto->desc}}</p>
+        </div>
+        @endif
+    </div>
 
-                                @if ($producto->desc)
-                                    <p class="text-[16px]">{{$producto->desc}}</p>
-                                @endif
-                            </div>
-
-
-                        </div>
-
-                        <a href="{{ route('contacto', ['mensaje' => $producto->name]) }}"
-                            class="w-full flex justify-center rounded-sm items-center bg-primary-orange text-white font-bold h-[41px] max-sm:h-[36px] max-sm:text-sm">
-                            CONSULTAR
-                        </a>
-                    </div>
+    <div class="flex gap-3 max-sm:flex-col">
+        {{-- <a href="#" 
+            class="flex-1 flex justify-center rounded-sm items-center border-2 border-primary-orange text-primary-orange font-bold h-[41px] max-sm:h-[36px] max-sm:text-sm hover:bg-primary-orange hover:text-white transition-colors">
+            FICHA TÉCNICA
+        </a> --}}
+        <a href="{{ route('contacto', ['mensaje' => $producto->code . ' - ' . $producto->name]) }}"
+            class="flex-1 flex justify-center rounded-sm items-center bg-primary-orange text-white font-bold h-[41px] max-sm:h-[36px] max-sm:text-sm hover:bg-orange-600 transition-colors">
+            CONSULTAR
+        </a>
+    </div>
+</div>
                 </div>
 
 
@@ -115,10 +158,10 @@
                                                 class="text-black group-hover:text-green-700 text-[16px] max-sm:text-[14px] transition-colors duration-300">
                                                 Cod. Or.: {{ $prodRelacionado->code }}
                                             </h3>
-                                            <h3
+                                            {{-- <h3
                                                 class="text-primary-orange group-hover:text-green-700 text-[16px] max-sm:text-[14px] transition-colors duration-300">
-                                                Cod. SR: {{ $prodRelacionado->code_sr }}
-                                            </h3>
+                                                Cod. Al: {{ $prodRelacionado->code_OEM }}
+                                            </h3> --}}
                                         </div>
                                         <p
                                             class="text-gray-800 text-[18px] max-sm:text-[14px] font-semibold transition-colors duration-300 ">

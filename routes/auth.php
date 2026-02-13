@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CuentaCorrienteController;
 use App\Http\Controllers\ListaDePreciosController;
 use App\Http\Controllers\MargenesController;
 use App\Http\Controllers\PedidoController;
@@ -83,6 +84,7 @@ Route::middleware('auth')->group(function () {
 
         Route::post('hacerPedido', [PrivadaController::class, 'hacerPedido'])
             ->name('hacerPedido');
+    Route::get('privada/cuenta-corriente', [CuentaCorrienteController::class, 'index'])->name('cuenta.corriente');
 
         Route::post('recomprar', [PedidoController::class, 'recomprar'])
             ->name('recomprar');

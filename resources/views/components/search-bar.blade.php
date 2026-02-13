@@ -11,6 +11,77 @@
             <!-- Contenedor de campos -->
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4 max-sm:gap-3">
 
+                
+                      <div class="flex flex-col gap-2 relative">
+                    <label for="tipo" class="text-[16px] max-sm:text-[14px] text-white ">Categoría</label>
+                    <div class="relative">
+                        <select
+                            class="rounded-sm bg-white p-2 pr-2 outline-transparent focus:outline focus:outline-primary-orange transition duration-300 w-full text-sm max-sm:text-xs"
+                            name="tipo" id="tipo">
+                            <option value="">Seleccionar categoria</option>
+                            @foreach ($categorias as $categoria)
+                                <option value="{{ $categoria->id }}" {{ ($tipo ?? '') == $categoria->id ? 'selected' : '' }}>
+                                    {{ $categoria->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @if($tipo ?? '')
+                            <a href="{{ route('productos', array_filter(request()->except('tipo'))) }}"
+                                class="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition duration-200"
+                                title="Eliminar filtro">
+                                <svg class="w-4 h-4 max-sm:w-3 max-sm:h-3" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Código Original -->
+                <div class="flex flex-col gap-2 w-full">
+                    <label for="codigo_original" class="text-[16px] max-sm:text-[14px] text-white ">Código SGB</label>
+                    <div class="relative">
+                        <input value="{{ $code ?? '' }}" type="text"
+                            class="rounded-sm bg-white p-2 pr-2 outline-transparent focus:outline focus:outline-primary-orange transition duration-300 w-full text-sm max-sm:text-xs"
+                            id="codigo_original" name="code" placeholder="Ingrese código original">
+                        @if($code ?? '')
+                            <a href="{{ route('productos', array_filter(request()->except('code'))) }}"
+                                class="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition duration-200"
+                                title="Eliminar filtro">
+                                <svg class="w-4 h-4 max-sm:w-3 max-sm:h-3" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Código SR33 -->
+                <div class="flex flex-col gap-2 w-full">
+                    <label for="codigo_sr" class="text-[16px] max-sm:text-[14px] text-white ">Código alternativo</label>
+                    <div class="relative">
+                        <input value="{{ $codeoem ?? '' }}" type="text"
+                            class="rounded-sm bg-white p-2 pr-2 outline-transparent focus:outline focus:outline-primary-orange transition duration-300 w-full text-sm max-sm:text-xs"
+                            id="codigo_oem" name="code_oem" placeholder="Ingrese código sr33">
+                        @if($codeoem ?? '')
+                            <a href="{{ route('productos', array_filter(request()->except('code_oem'))) }}"
+                                class="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition duration-200"
+                                title="Eliminar filtro">
+                                <svg class="w-4 h-4 max-sm:w-3 max-sm:h-3" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+
+
                 <!-- Marca -->
                 <div class="flex flex-col gap-2 w-full">
                     <label for="marca" class="text-[16px] max-sm:text-[14px] text-white ">Marca</label>
@@ -94,74 +165,7 @@
                     </div>
                 </div>
 
-                <!-- Código Original -->
-                <div class="flex flex-col gap-2 w-full">
-                    <label for="codigo_original" class="text-[16px] max-sm:text-[14px] text-white ">Código</label>
-                    <div class="relative">
-                        <input value="{{ $code ?? '' }}" type="text"
-                            class="rounded-sm bg-white p-2 pr-2 outline-transparent focus:outline focus:outline-primary-orange transition duration-300 w-full text-sm max-sm:text-xs"
-                            id="codigo_original" name="code" placeholder="Ingrese código original">
-                        @if($code ?? '')
-                            <a href="{{ route('productos', array_filter(request()->except('code'))) }}"
-                                class="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition duration-200"
-                                title="Eliminar filtro">
-                                <svg class="w-4 h-4 max-sm:w-3 max-sm:h-3" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </a>
-                        @endif
-                    </div>
-                </div>
-
-                <!-- Código SR33 -->
-                <div class="flex flex-col gap-2 w-full">
-                    <label for="codigo_sr" class="text-[16px] max-sm:text-[14px] text-white ">Código alternativo</label>
-                    <div class="relative">
-                        <input value="{{ $codeoem ?? '' }}" type="text"
-                            class="rounded-sm bg-white p-2 pr-2 outline-transparent focus:outline focus:outline-primary-orange transition duration-300 w-full text-sm max-sm:text-xs"
-                            id="codigo_oem" name="code_oem" placeholder="Ingrese código sr33">
-                        @if($codeoem ?? '')
-                            <a href="{{ route('productos', array_filter(request()->except('code_oem'))) }}"
-                                class="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition duration-200"
-                                title="Eliminar filtro">
-                                <svg class="w-4 h-4 max-sm:w-3 max-sm:h-3" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </a>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="flex flex-col gap-2 relative">
-                    <label for="tipo" class="text-[16px] max-sm:text-[14px] text-white ">Categoría</label>
-                    <div class="relative">
-                        <select
-                            class="rounded-sm bg-white p-2 pr-2 outline-transparent focus:outline focus:outline-primary-orange transition duration-300 w-full text-sm max-sm:text-xs"
-                            name="tipo" id="tipo">
-                            <option value="">Seleccionar categoria</option>
-                            @foreach ($categorias as $categoria)
-                                <option value="{{ $categoria->id }}" {{ ($tipo ?? '') == $categoria->id ? 'selected' : '' }}>
-                                    {{ $categoria->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @if($tipo ?? '')
-                            <a href="{{ route('productos', array_filter(request()->except('tipo'))) }}"
-                                class="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition duration-200"
-                                title="Eliminar filtro">
-                                <svg class="w-4 h-4 max-sm:w-3 max-sm:h-3" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </a>
-                        @endif
-                    </div>
-                </div>
+          
             </div>
         </div>
 

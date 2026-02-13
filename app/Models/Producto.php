@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Producto extends Model
 {
     protected $guarded = [];
-        protected $appends = ['imagen_final'];
+    protected $appends = ['imagen_final'];
 
     public function categoria()
     {
@@ -59,21 +59,56 @@ class Producto extends Model
         return $this->hasMany(Oferta::class, 'producto_id');
     }
 
-
-public function getImagenFinalAttribute()
-{
-    // Primero: imagen propia del producto
-    $img = $this->imagenes()->first();
-    if ($img) {
-        return $img->image;
+    protected static function booted()
+    {
+        // Cuando se crea un producto, intentar obtener descripción de Bejerman
+        static::created(function ($producto) {
+            if ($producto->code && !$producto->descripcion) {
+                $producto->sincronizarConBejerman();
+            }
+        });
     }
 
-    // Segundo: imagen de la categoría
-    if ($this->categoria && $this->categoria->getRawOriginal('image')) {
-        return $this->categoria->image;
+    /**
+     * Sincronizar descripción desde Bejerman
+     */
+    public function sincronizarConBejerman()
+    {
+        $articulo = DB::connection('bejerman')
+            ->table('Articulos')
+            ->where('art_CodGen', trim($this->code))
+            ->first();
+
+        if ($articulo) {
+            $descripcion = trim($articulo->art_DescGen . ' ' . $articulo->artele_Desc1);
+            $descripcion = preg_replace('/\s+/', ' ', $descripcion);
+
+            $this->update([
+                'descripcion' => $descripcion,
+                'codigo_barras' => $articulo->art_CodBarras,
+            ]);
+
+            return true;
+        }
+
+        return false;
     }
 
-    // Fallback: logo en storage
-    return asset('storage/images/logo.png');
-}
+
+    public function getImagenFinalAttribute()
+    {
+        // Primero: imagen propia del producto
+        $img = $this->imagenes()->first();
+        if ($img) {
+            return $img->image;
+        }
+
+        // Segundo: imagen de la categoría
+        if ($this->categoria && $this->categoria->getRawOriginal('image')) {
+            return $this->categoria->image;
+        }
+
+        // Fallback: logo en storage
+        return asset('storage/images/logo.png');
+    }
 }

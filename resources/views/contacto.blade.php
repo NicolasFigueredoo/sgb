@@ -90,7 +90,7 @@
 
                 @foreach ($datos as $dato)
                     <a href="{{ $dato['href'] }}" target="_blank"
-                        class="flex flex-row items-center gap-3 transition-opacity hover:opacity-80">
+                        class="flex flex-row items-start gap-3 transition-opacity hover:opacity-80">
                         {!! $dato['icon'] !!}
                         <p class="text-base text-[#74716A] max-w-4/7">
                             {{ $dato['name'] }}

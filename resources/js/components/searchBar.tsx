@@ -91,6 +91,71 @@ const SearchBar = () => {
                     <h2 className="border-b pb-1 text-[20px] font-bold text-white md:text-[24px]">Por vehículo / Código</h2>
 
                     <div className="flex flex-col gap-4 md:flex-row">
+                        
+                        
+                        {/* Categoria */}
+
+                        <div className="flex w-full flex-col gap-2">
+                            <label htmlFor="tipo" className="text-[14px] text-white md:text-[16px]">
+                                Categoria
+                            </label>
+                            <div className="relative">
+                                <select
+                                    className="focus:outline-primary-orange w-full rounded-sm bg-white p-2 text-sm outline-transparent transition duration-300 focus:outline md:text-base"
+                                    name="tipo"
+                                    id="tipo"
+                                    value={data.categoria}
+                                    onChange={(e) => setData('categoria', e.target.value)}
+                                >
+                                    <option value="">Elegir la categoria</option>
+                                    {categorias?.map((categoria) => (
+                                        <option key={categoria.id} value={categoria.id}>
+                                            {categoria.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <ClearFilterButton filterValue={data.categoria} filterName="tipo" />
+                            </div>
+                        </div>
+
+                           {/* Código Original */}
+                        <div className="flex w-full flex-col gap-2">
+                            <label htmlFor="codigo_original" className="text-[14px] text-white md:text-[16px]">
+                                Código SGB
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    className="focus:outline-primary-orange w-full rounded-sm bg-white p-2 text-sm outline-transparent transition duration-300 focus:outline md:text-base"
+                                    id="codigo_original"
+                                    name="codigo_original"
+                                    placeholder="Ingrese código original"
+                                    value={data.code}
+                                    onChange={(e) => setData('code', e.target.value)}
+                                />
+                                <ClearFilterButton filterValue={data.code} filterName="code" />
+                            </div>
+                        </div>
+
+                              {/* Código SR33 */}
+                        <div className="flex w-full flex-col gap-2">
+                            <label htmlFor="codigo_sr" className="text-[14px] text-white md:text-[16px]">
+                                Código alternativo
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    className="focus:outline-primary-orange w-full rounded-sm bg-white p-2 text-sm outline-transparent transition duration-300 focus:outline md:text-base"
+                                    id="codigo_sr"
+                                    name="codigo_sr"
+                                    placeholder="Ingrese código sr33"
+                                    value={data.code_oem}
+                                    onChange={(e) => setData('code_oem', e.target.value)}
+                                />
+                                <ClearFilterButton filterValue={data.code_oem} filterName="code_oem" />
+                            </div>
+                        </div>
+
                         {/* Marca */}
                         <div className="flex w-full flex-col gap-2">
                             <label htmlFor="marca" className="text-[14px] text-white md:text-[16px]">
@@ -140,6 +205,7 @@ const SearchBar = () => {
                                 <ClearFilterButton filterValue={data.modelo} filterName="modelo" />
                             </div>
                         </div>
+                        {/* Motor */}
 
                         <div className="flex w-full flex-col gap-2">
                             <label htmlFor="motor" className="text-[14px] text-white md:text-[16px]">
@@ -164,65 +230,10 @@ const SearchBar = () => {
                             </div>
                         </div>
 
-                        {/* Código Original */}
-                        <div className="flex w-full flex-col gap-2">
-                            <label htmlFor="codigo_original" className="text-[14px] text-white md:text-[16px]">
-                                Código
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    className="focus:outline-primary-orange w-full rounded-sm bg-white p-2 text-sm outline-transparent transition duration-300 focus:outline md:text-base"
-                                    id="codigo_original"
-                                    name="codigo_original"
-                                    placeholder="Ingrese código original"
-                                    value={data.code}
-                                    onChange={(e) => setData('code', e.target.value)}
-                                />
-                                <ClearFilterButton filterValue={data.code} filterName="code" />
-                            </div>
-                        </div>
+                     
 
-                        {/* Código SR33 */}
-                        <div className="flex w-full flex-col gap-2">
-                            <label htmlFor="codigo_sr" className="text-[14px] text-white md:text-[16px]">
-                                Código alternativo
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    className="focus:outline-primary-orange w-full rounded-sm bg-white p-2 text-sm outline-transparent transition duration-300 focus:outline md:text-base"
-                                    id="codigo_sr"
-                                    name="codigo_sr"
-                                    placeholder="Ingrese código sr33"
-                                    value={data.code_oem}
-                                    onChange={(e) => setData('code_oem', e.target.value)}
-                                />
-                                <ClearFilterButton filterValue={data.code_oem} filterName="code_oem" />
-                            </div>
-                        </div>
-                        <div className="flex w-full flex-col gap-2">
-                            <label htmlFor="tipo" className="text-[14px] text-white md:text-[16px]">
-                                Categoria
-                            </label>
-                            <div className="relative">
-                                <select
-                                    className="focus:outline-primary-orange w-full rounded-sm bg-white p-2 text-sm outline-transparent transition duration-300 focus:outline md:text-base"
-                                    name="tipo"
-                                    id="tipo"
-                                    value={data.categoria}
-                                    onChange={(e) => setData('categoria', e.target.value)}
-                                >
-                                    <option value="">Elegir la categoria</option>
-                                    {categorias?.map((categoria) => (
-                                        <option key={categoria.id} value={categoria.id}>
-                                            {categoria.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                <ClearFilterButton filterValue={data.categoria} filterName="tipo" />
-                            </div>
-                        </div>
+                  
+
                     </div>
                 </div>
             </div>
