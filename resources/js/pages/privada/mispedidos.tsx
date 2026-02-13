@@ -16,7 +16,7 @@ export default function Mispedidos() {
                         <div className="bg-black grid h-[52px] grid-cols-7 items-center rounded-t-sm text-white max-sm:hidden">
                             <p></p>
                             <p>Nº de pedido</p>
-                            <p>Fecha de compra</p>
+                            <p>Fecha de pedido</p>
                             <p>Estado</p>
                             <p>Importe</p>
                             <p></p>
