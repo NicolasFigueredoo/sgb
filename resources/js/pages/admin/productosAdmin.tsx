@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Select from 'react-select';
 import Dashboard from './dashboard';
-import { log } from 'console';
 
 export default function ProductosAdmin() {
     const { productos, categorias, marcas, modelos, motores } = usePage().props;
@@ -22,7 +21,6 @@ export default function ProductosAdmin() {
         modelos: [],
         motores: [],
     });
-
 
     const [searchTerm, setSearchTerm] = useState('');
     const [createView, setCreateView] = useState(false);
@@ -99,10 +97,10 @@ export default function ProductosAdmin() {
 
         router.post(
             route('importarProductos'),
+            { archivo },
             {
-                archivo: archivo,
-            },
-            {
+                forceFormData: true,
+                preserveScroll: true,
                 onSuccess: () => {
                     toast.success('Productos importados correctamente');
                     reset();

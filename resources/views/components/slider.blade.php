@@ -27,8 +27,7 @@
                             </div>
 
                             <a href="{{ $slider->link}}"
-                                class="flex justify-center items-center w-[163px] max-sm:w-[130px] h-[41px] max-sm:h-[36px] border border-white rounded-lg text-[16px] max-sm:text-[14px] hover:text-primary-orange hover:bg-white transition duration-300">Ver
-                                productos</a>
+                                class="flex justify-center items-center w-[163px] max-sm:w-[130px] h-[41px] max-sm:h-[36px] border border-white rounded-lg text-[16px] max-sm:text-[14px] hover:text-primary-orange hover:bg-white transition duration-300">VER PRODUCTOS</a>
                         </div>
                         {{-- <a href="{{ route('categorias') }}"
                             class="border border-white w-[180px] sm:w-[200px] lg:w-[230px] text-center py-2 sm:py-2.5 text-sm sm:text-base rounded-full hover:bg-white hover:text-black transition duration-300">Ver

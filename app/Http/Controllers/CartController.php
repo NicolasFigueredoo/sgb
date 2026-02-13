@@ -3,20 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\Producto;
+use App\Services\PrecioService;
 use Gloudemans\Shoppingcart\Facades\Cart;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Log;
 
 class CartController extends Controller
 {
+    protected $precioService;
 
-    public function __construct()
+    public function __construct(PrecioService $precioService)
     {
-        // Restaurar carrito al inicializar si hay usuario logueado
+        $this->precioService = $precioService;
+        
+        // Restaurar carrito al inicializar
         if (Auth::check() && !session('cliente_seleccionado')) {
             Cart::restore(Auth::id());
-        } else {
+        } elseif (session('cliente_seleccionado')) {
             Cart::restore(session('cliente_seleccionado')->id);
         }
     }
@@ -29,28 +33,48 @@ class CartController extends Controller
 
         return view('cart.index', compact('cartItems', 'cartTotal', 'cartCount'));
     }
+
     public function addtocart(Request $request)
     {
+        $producto = Producto::where('id', $request->id)->first();
 
-        $producto = Producto::find($request->id)->first();
+        if (!$producto) {
+            return response()->json(['ok' => false, 'message' => 'Producto no encontrado'], 404);
+        }
 
+        // Obtener usuario actual
+        $user = Auth::check() ? Auth::user() : session('cliente_seleccionado');
+
+        // Calcular precio con descuentos de Bejerman
+        $precioCalculado = $this->precioService->calcularPrecioFinal(
+            $user, 
+            $producto->code, 
+            $request->qty ?? 1
+        );
 
         Cart::add(
             $request->id,
             $request->name,
-            $request->qty,
-
-            $producto->precio, // Asegurarse de que el precio sea correcto
-            0
+            $request->qty ?? 1,
+            $precioCalculado['precio_final'], // Precio con descuentos aplicados
+            0,
+            [
+                'precio_base' => $precioCalculado['precio_base'],
+                'descuento_aplicado' => $precioCalculado['descuento_aplicado'],
+                'porcentaje_descuento' => $precioCalculado['porcentaje_descuento'],
+                'code' => $producto->code,
+            ]
         );
 
-
-        // Guardar en base de datos si hay usuario logueado
+        // Guardar en base de datos
         if (Auth::check() && !session('cliente_seleccionado')) {
             Cart::store(Auth::id());
-        } else {
+        } elseif (session('cliente_seleccionado')) {
             Cart::store(session('cliente_seleccionado')->id);
         }
+
+           return redirect()->back()->with('success', 'Producto agregado al carrito');
+
     }
 
     public function update(Request $request)
@@ -58,16 +82,34 @@ class CartController extends Controller
         $request->validate([
             'qty' => 'required|integer|min:1'
         ]);
+
         if ($request->rowId) {
-            Cart::update($request->rowId, $request->qty);
+            $item = Cart::get($request->rowId);
+            $user = Auth::check() ? Auth::user() : session('cliente_seleccionado');
+
+            // Recalcular precio con nueva cantidad
+            $precioCalculado = $this->precioService->calcularPrecioFinal(
+                $user,
+                $item->options->code,
+                $request->qty
+            );
+
+            Cart::update($request->rowId, [
+                'qty' => $request->qty,
+                'price' => $precioCalculado['precio_final'],
+                'options' => [
+                    'precio_base' => $precioCalculado['precio_base'],
+                    'descuento_aplicado' => $precioCalculado['descuento_aplicado'],
+                    'porcentaje_descuento' => $precioCalculado['porcentaje_descuento'],
+                    'code' => $item->options->code,
+                ]
+            ]);
         }
 
-
-
-        // Guardar cambios en base de datos
+        // Guardar cambios
         if (Auth::check() && !session('cliente_seleccionado')) {
             Cart::store(Auth::id());
-        } else {
+        } elseif (session('cliente_seleccionado')) {
             Cart::store(session('cliente_seleccionado')->id);
         }
 
@@ -78,10 +120,9 @@ class CartController extends Controller
     {
         Cart::remove($request->rowId);
 
-        // Guardar cambios en base de datos
         if (Auth::check() && !session('cliente_seleccionado')) {
             Cart::store(Auth::id());
-        } else {
+        } elseif (session('cliente_seleccionado')) {
             Cart::store(session('cliente_seleccionado')->id);
         }
 
@@ -92,10 +133,9 @@ class CartController extends Controller
     {
         Cart::destroy();
 
-        // Eliminar de base de datos
         if (Auth::check() && !session('cliente_seleccionado')) {
             Cart::erase(Auth::id());
-        } else {
+        } elseif (session('cliente_seleccionado')) {
             Cart::erase(session('cliente_seleccionado')->id);
         }
 
@@ -106,41 +146,60 @@ class CartController extends Controller
     {
         if (Auth::check() && !session('cliente_seleccionado')) {
             Cart::store(Auth::id());
-            return response()->json(['success' => true, 'message' => 'Carrito guardado']);
-        } else {
+        } elseif (session('cliente_seleccionado')) {
             Cart::store(session('cliente_seleccionado')->id);
-            return response()->json(['success' => true, 'message' => 'Carrito guardado']);
         }
+
+        return response()->json(['success' => true, 'message' => 'Carrito guardado']);
     }
-
-
 
     public function compraRapida(Request $request)
     {
+        try {
+            $producto = Producto::where('code', $request->code)->first();
 
+            if (!$producto) {
+                return response()->json(['ok' => false, 'message' => 'Producto no encontrado'], 404);
+            }
 
-        $producto = Producto::where('code', $request->code)->with('precio')->first();
+            $user = Auth::check() ? Auth::user() : session('cliente_seleccionado');
 
-        $tieneOfertaVigente = $producto->ofertas()
-            ->where('user_id', Auth::id())
-            ->where('fecha_fin', '>', now())
-            ->exists();
+            // Calcular precio con descuentos de Bejerman
+            $precioCalculado = $this->precioService->calcularPrecioFinal(
+                $user,
+                $producto->code,
+                $request->qty ?? 1
+            );
 
+            Cart::add(
+                $producto->id,
+                $producto->name,
+                $request->qty ?? 1,
+                $precioCalculado['precio_final'],
+                0,
+                [
+                    'precio_base' => $precioCalculado['precio_base'],
+                    'descuento_aplicado' => $precioCalculado['descuento_aplicado'],
+                    'porcentaje_descuento' => $precioCalculado['porcentaje_descuento'],
+                    'code' => $producto->code,
+                ]
+            );
 
+            if (Auth::check()) {
+                Cart::store(Auth::id());
+            } elseif (session()->has('cliente_seleccionado')) {
+                Cart::store(session('cliente_seleccionado')->id);
+            }
 
-        Cart::add(
-            $producto->id,
-            $producto->name,
-            $request->qty,
-            $tieneOfertaVigente ? $producto->precio->precio * (1 - $producto->descuento_oferta / 100) : $producto->precio->precio, // Asegurarse de que el precio sea correcto
-            0
-        );
+            return response()->json([
+                'ok' => true,
+                'message' => 'Producto añadido al carrito correctamente',
+                'precio_info' => $precioCalculado,
+            ]);
 
-        // Guardar en base de datos si hay usuario logueado
-        if (Auth::check() && !session('cliente_seleccionado')) {
-            Cart::store(Auth::id());
-        } else {
-            Cart::store(session('cliente_seleccionado')->id);
+        } catch (\Throwable $e) {
+            Log::error('❌ Error en compraRapida', ['error' => $e->getMessage()]);
+            return response()->json(['ok' => false, 'message' => 'Error interno del servidor'], 500);
         }
     }
 }

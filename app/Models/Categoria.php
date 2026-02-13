@@ -13,10 +13,15 @@ class Categoria extends Model
         return $this->hasMany(Producto::class)->orderBy('order');
     }
 
-    public function getImageAttribute($value)
-    {
+ public function getImageAttribute($value)
+{
+    if ($value) {
         return url("storage/" . $value);
     }
+    
+    // Fallback al logo
+    return asset('storage/images/logo.png');
+}
 
     public function subCategorias()
     {

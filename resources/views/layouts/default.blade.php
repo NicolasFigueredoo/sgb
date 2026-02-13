@@ -19,6 +19,8 @@
     <meta name="keywords"
         content="@yield('keywords', 'autopartes, repuestos, accesorios, automóviles, tienda en línea')">
 
+        
+
 </head>
 
 <body class="font-sans text-gray-900 antialiased">

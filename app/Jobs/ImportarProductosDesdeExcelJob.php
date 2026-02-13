@@ -3,219 +3,227 @@
 namespace App\Jobs;
 
 use App\Models\Categoria;
+use App\Models\Marca;
 use App\Models\Producto;
-use App\Models\ProductoMarca;
+use App\Models\Modelo;
+use App\Models\Motor;
 use App\Models\ProductoModelo;
-use App\Models\SubCategoria;
-use App\Models\SubProducto;
+use App\Models\ProductoMotor;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ImportarProductosDesdeExcelJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $archivoPath;
+    public string $archivoPath;
 
-    public function __construct($archivoPath)
+    public function __construct(string $archivoPath)
     {
         $this->archivoPath = $archivoPath;
     }
 
     public function handle()
     {
-        try {
-            $filePath = Storage::path($this->archivoPath);
+        $disk = config('filesystems.default', 'local');
 
-            // Verificar que el archivo existe
-            if (!file_exists($filePath)) {
-                Log::error("Archivo no encontrado: " . $filePath);
-                return;
-            }
+        Log::info('IMPORT START', [
+            'disk' => $disk,
+            'archivoPath' => $this->archivoPath,
+        ]);
 
-            $spreadsheet = IOFactory::load($filePath);
-            $sheet = $spreadsheet->getActiveSheet();
+        $filePath = Storage::disk($disk)->path($this->archivoPath);
 
-            // Obtener información del sheet
-            $highestRow = $sheet->getHighestRow();
-            $highestColumn = $sheet->getHighestColumn();
+        Log::info('IMPORT FILE', [
+            'filePath' => $filePath,
+            'exists' => file_exists($filePath),
+            'size' => file_exists($filePath) ? filesize($filePath) : null,
+        ]);
 
-            Log::info("Procesando Excel - Filas: {$highestRow}, Columnas: {$highestColumn}");
-
-            // Verificar que hay datos
-            if ($highestRow < 2) {
-                Log::warning("El archivo no tiene datos para procesar (solo tiene {$highestRow} fila(s))");
-                return;
-            }
-
-            $rows = $sheet->toArray(null, true, true, true);
-
-            // Debug: mostrar estructura del array
-            Log::info("Estructura del array rows:", [
-                'total_rows' => count($rows),
-                'keys' => array_keys($rows),
-                'first_few_keys' => array_slice(array_keys($rows), 0, 3)
-            ]);
-
-            // Verificar que tenemos filas
-            if (empty($rows)) {
-                Log::error("El array de filas está vacío");
-                return;
-            }
-
-            // SOLUCIÓN MEJORADA: Usar array_values para reindexar y luego slice
-            $rowsReindexed = array_values($rows);
-            $dataRows = array_slice($rowsReindexed, 1);
-
-            Log::info("Procesando " . count($dataRows) . " filas de datos");
-
-            foreach ($dataRows as $index => $row) {
-                try {
-                    $this->procesarFila($row, $index + 2); // +2 porque empezamos desde fila 2 del Excel
-                } catch (\Exception $e) {
-                    Log::error("Error procesando fila " . ($index + 2) . ": " . $e->getMessage());
-                    continue; // Continuar con la siguiente fila
-                }
-            }
-        } catch (\Exception $e) {
-            Log::error("Error general en ImportarProductosDesdeExcelJob: " . $e->getMessage());
-            Log::error("Stack trace: " . $e->getTraceAsString());
-            throw $e;
-        }
-
-        // SOLUCIÓN 2 ALTERNATIVA: Usar contador manual
-        /*
-        $contador = 0;
-        foreach ($rows as $row) {
-            $contador++;
-            if ($contador === 1) continue; // Saltar encabezado
-            $this->procesarFila($row);
-        }
-        */
-
-        // SOLUCIÓN 3 ALTERNATIVA: Usar array_keys para obtener las claves reales
-        /*
-        $rowKeys = array_keys($rows);
-        foreach ($rowKeys as $key) {
-            if ($key === $rowKeys[0]) continue; // Saltar primera fila
-            $this->procesarFila($rows[$key]);
-        }
-        */
-
-        // SOLUCIÓN 4 ALTERNATIVA: Usar getHighestRow() para iterar manualmente
-        /*
-        $highestRow = $sheet->getHighestRow();
-        for ($rowIndex = 2; $rowIndex <= $highestRow; $rowIndex++) {
-            $row = [];
-            foreach (range('A', 'N') as $column) {
-                $row[$column] = $sheet->getCell($column . $rowIndex)->getValue();
-            }
-            $this->procesarFila($row);
-        }
-        */
-    }
-
-    private function procesarFila($row, $numeroFila = null)
-    {
-        // Validar que la fila tiene la estructura esperada
-        if (!is_array($row)) {
-            Log::warning("Fila {$numeroFila}: No es un array válido");
+        if (!file_exists($filePath)) {
+            Log::error('IMPORT FILE NOT FOUND', ['filePath' => $filePath]);
             return;
         }
 
-        // Verificar que las columnas necesarias existen
-        $columnasRequeridas = ['B', 'C'];
-        foreach ($columnasRequeridas as $columna) {
-            if (!isset($row[$columna])) {
-                Log::warning("Fila {$numeroFila}: Columna {$columna} no encontrada");
-                return;
-            }
-        }
+        $spreadsheet = IOFactory::load($filePath);
+        $sheet = $spreadsheet->getActiveSheet();
 
-        // Extraer datos con valores por defecto
-        $codigo = isset($row['B']) ? trim($row['B']) : '';
-        $nombre = isset($row['C']) ? trim($row['C']) : '';
-        $descripcion_visible = isset($row['D']) ? trim($row['D']) : '';
-        $desc_invisible = isset($row['E']) ? trim($row['E']) : '';
-        $unidad_pack = isset($row['F']) ? trim($row['F']) : '';
-        $familia = isset($row['G']) ? trim($row['G']) : '';
-        $codigo_oem = isset($row['H']) ? trim($row['H']) : '';
-        $codigo_competidor = isset($row['I']) ? trim($row['I']) : '';
-        $stock = isset($row['J']) ? trim($row['J']) : 0;
-        $modelos = isset($row['K']) ? trim($row['K']) : '';
-        $medida = isset($row['L']) ? trim($row['L']) : '';
-        $marcas = isset($row['M']) ? trim($row['M']) : '';
-        $descuento_oferta = isset($row['N']) ? trim($row['N']) : 0;
+        $highestRow = (int) $sheet->getHighestRow();
+        $highestColumn = $sheet->getHighestColumn();
 
-        // Validar que el código no esté vacío
-        if (empty($codigo)) {
-            Log::warning("Fila {$numeroFila}: Código vacío, saltando");
+        Log::info('IMPORT SHEET', [
+            'highestRow' => $highestRow,
+            'highestColumn' => $highestColumn,
+        ]);
+
+        if ($highestRow < 2) {
+            Log::warning('IMPORT EMPTY EXCEL', ['highestRow' => $highestRow]);
             return;
         }
 
-        try {
-            $producto = Producto::updateOrCreate(
-                ['code' => $codigo],
-                [
-                    'name' => $nombre,
-                    'desc_visible' => $descripcion_visible,
-                    'desc_invisible' => $desc_invisible,
-                    'unidad_pack' => $unidad_pack ?? null,
-                    'familia' => $familia,
-                    'code_oem' => $codigo_oem,
-                    'code_competitor' => $codigo_competidor,
-                    'stock' => is_numeric($stock) ? $stock : 0,
-                    'medida' => $medida,
-                    'descuento_oferta' => is_numeric($descuento_oferta) ? $descuento_oferta : 0
-                ]
-            );
+        $procesados = 0;
+        $saltados = 0;
+        $errores = 0;
 
-            // Procesar marcas
-            if (!empty($marcas)) {
-                $marcas_array = array_filter(array_map('trim', explode(',', $marcas)));
-                foreach ($marcas_array as $marca) {
-                    if (empty($marca)) continue;
+        // Normaliza números con coma, etc.
+        $toIntSafe = function ($value, $default = 0) {
+            if ($value === null) return $default;
+            $v = trim((string) $value);
+            if ($v === '') return $default;
 
-                    $categoria = Categoria::where('name', $marca)->first();
-                    if ($categoria) {
-                        ProductoMarca::firstOrCreate([
-                            'producto_id' => $producto->id,
-                            'categoria_id' => $categoria->id
-                        ]);
-                    } else {
-                        Log::info("Marca no encontrada: {$marca} (Fila {$numeroFila})");
-                    }
+            // si tiene letras o símbolos raros, devolvemos default
+            if (preg_match('/[a-zA-Z]/', $v)) return $default;
+
+            // 1.234 -> 1234 (miles)
+            $v = str_replace('.', '', $v);
+            // 123,45 -> 123.45
+            $v = str_replace(',', '.', $v);
+
+            if (!is_numeric($v)) return $default;
+
+            // precio/unidad_pack en tu tabla parecen enteros
+            $n = (float) $v;
+            if ($n < 0) return $default;
+
+            return (int) round($n);
+        };
+
+        for ($row = 2; $row <= $highestRow; $row++) {
+            try {
+                // Mapeo EXACTO por letras según tu Excel:
+                // A CODIGO SGB
+                // B MARCA
+                // C PRODUCTO/CATEGORIA
+                // D Modelo / Motor (texto, no se guarda en productos)
+                // E MODELOS
+                // F MOTORES
+                // G CILINDRADA
+                // H..K Alternativos
+                // L MEDIDAS
+                // M Unidades por Juego
+                // N Precio Unitario
+                // O Precio Jgo
+
+                $code = trim((string)($sheet->getCell("A{$row}")->getValue() ?? ''));
+                if ($code === '') {
+                    $saltados++;
+                    continue;
                 }
-            }
 
-            // Procesar modelos
-            if (!empty($modelos)) {
-                $modelos_array = array_filter(array_map('trim', explode(',', $modelos)));
-                foreach ($modelos_array as $modelo) {
-                    if (empty($modelo)) continue;
+                $marcaNombre = trim((string)($sheet->getCell("B{$row}")->getValue() ?? ''));
+                $categoriaNombre = trim((string)($sheet->getCell("C{$row}")->getValue() ?? ''));
+                $modelosTxt = trim((string)($sheet->getCell("E{$row}")->getValue() ?? ''));
+                $motoresTxt = trim((string)($sheet->getCell("F{$row}")->getValue() ?? ''));
+                $medidas = trim((string)($sheet->getCell("L{$row}")->getValue() ?? ''));
 
-                    $subCategoria = SubCategoria::where('name', $modelo)->first();
-                    if ($subCategoria) {
+                $unidad_pack_raw = $sheet->getCell("M{$row}")->getValue();
+                $precio_unit_raw = $sheet->getCell("N{$row}")->getValue();
+                $precio_jgo_raw  = $sheet->getCell("O{$row}")->getValue();
+
+                $code_oem = trim((string)($sheet->getCell("H{$row}")->getValue() ?? ''));
+
+                $unidad_pack = $toIntSafe($unidad_pack_raw, 1);
+                if ($unidad_pack <= 0) $unidad_pack = 1; // NOT NULL
+
+                // elegimos precio jgo si existe, si no unitario
+                $precio_jgo  = $toIntSafe($precio_jgo_raw, 0);
+                $precio_unit = $toIntSafe($precio_unit_raw, 0);
+                $precio = $precio_unit;
+
+                // guardia: si viene un numero absurdo, lo anulamos y logueamos
+                if ($precio > 999999999) { // ajustá el umbral a tu realidad
+                    Log::warning('IMPORT PRECIO ABERRANTE', [
+                        'row' => $row,
+                        'code' => $code,
+                        'precio_raw_unit' => $precio_unit_raw,
+                        'precio_raw_jgo' => $precio_jgo_raw,
+                        'precio_calculado' => $precio,
+                    ]);
+                    $precio = 0;
+                }
+
+                $categoriaId = null;
+                if ($categoriaNombre !== '') {
+                    $categoria = Categoria::firstOrCreate(['name' => $categoriaNombre]);
+                    $categoriaId = $categoria->id;
+                }
+
+                $marcaId = null;
+                if ($marcaNombre !== '') {
+                    $marca = Marca::firstOrCreate(['name' => $marcaNombre]);
+                    $marcaId = $marca->id;
+                }
+
+                $producto = Producto::updateOrCreate(
+                    ['code' => $code],
+                    [
+                        'name' => $categoriaNombre !== '' ? $categoriaNombre : $code,
+                        'code_oem' => $code_oem !== '' ? $code_oem : null,
+                        'unidad_pack' => $unidad_pack,         // NOT NULL
+                        'medidas' => $medidas !== '' ? $medidas : null,
+                        'precio' => $precio,                   // int
+                        'categoria_id' => $categoriaId,
+                        'marca_id' => $marcaId,
+                    ]
+                );
+
+                // Modelos (tabla producto_modelos con Modelo)
+                if ($modelosTxt !== '') {
+                    $modelosArr = array_filter(array_map('trim', preg_split('/,|;|\|/', $modelosTxt)));
+                    foreach ($modelosArr as $modeloName) {
+                        if ($modeloName === '') continue;
+
+                        $modelo = Modelo::firstOrCreate(['name' => $modeloName]);
                         ProductoModelo::firstOrCreate([
                             'producto_id' => $producto->id,
-                            'sub_categoria_id' => $subCategoria->id
+                            'modelo_id' => $modelo->id,
                         ]);
-                    } else {
-                        Log::info("Modelo no encontrado: {$modelo} (Fila {$numeroFila})");
                     }
                 }
-            }
 
-            Log::info("Producto procesado exitosamente: {$codigo} (Fila {$numeroFila})");
-        } catch (\Exception $e) {
-            Log::error("Error procesando producto {$codigo} (Fila {$numeroFila}): " . $e->getMessage());
-            throw $e;
+                // Motores (tabla producto_motores con Motor)
+                if ($motoresTxt !== '') {
+                    $motoresArr = array_filter(array_map('trim', preg_split('/,|;|\|/', $motoresTxt)));
+                    foreach ($motoresArr as $motorName) {
+                        if ($motorName === '') continue;
+
+                        $motor = Motor::firstOrCreate(['name' => $motorName]);
+                        ProductoMotor::firstOrCreate([
+                            'producto_id' => $producto->id,
+                            'motor_id' => $motor->id,
+                        ]);
+                    }
+                }
+
+                $procesados++;
+
+                if ($procesados % 200 === 0) {
+                    Log::info('IMPORT PROGRESS', [
+                        'procesados' => $procesados,
+                        'row' => $row,
+                    ]);
+                }
+
+            } catch (\Throwable $e) {
+                $errores++;
+                Log::error('IMPORT ROW ERROR', [
+                    'row' => $row,
+                    'msg' => $e->getMessage(),
+                ]);
+                continue;
+            }
         }
+
+        Log::info('IMPORT DONE', [
+            'procesados' => $procesados,
+            'saltados' => $saltados,
+            'errores' => $errores,
+        ]);
     }
 }

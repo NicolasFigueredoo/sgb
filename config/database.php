@@ -112,6 +112,18 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
+          'bejerman' => [
+            'driver' => 'sqlsrv',
+            'host' => '190.55.248.26',
+            'port' => '55433',
+            'database' => 'SBDAJOYR',
+            'username' => 'bejerman',
+            'password' => 'tiMCLmu27qtQwD',
+            'encrypt' => 'yes',
+            'trust_server_certificate' => 'true',
+        ],
+        
+
     ],
 
     /*

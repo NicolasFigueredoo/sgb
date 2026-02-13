@@ -8,31 +8,22 @@
     </div>
 
     <div class="grid grid-cols-4 max-sm:grid-cols-1 gap-5 max-sm:gap-4">
-        @foreach ($productos as $producto)
+           @foreach ($productos as $producto)
             <a href="{{ "/p/" . $producto->code }}"
-                class=" transition transform hover:-translate-y-1 hover:shadow-lg duration-300
-                                                                                                                                                                        h-[420px]  flex flex-col w-[288px] max-sm:w-full rounded-sm border border-[#DEDFE0]">
+                class="transition transform hover:-translate-y-1 hover:shadow-lg duration-300 h-[420px] flex flex-col w-[288px] max-sm:w-full rounded-sm border border-[#DEDFE0]">
                 <div class="h-full flex flex-col">
-                    @if ($producto->imagenes->count() > 0)
-                        <div class="relative min-h-[287px] max-sm:h-[200px]">
-                            <img src="{{ $producto->imagenes->first()->image }}" alt="{{ $producto->name }}"
-                                class=" w-full h-full  object-cover rounded-t-sm">
-                            <h2 class="absolute left-3 bottom-2 text-[14px] font-semibold uppercase text-primary-orange">
-                                {{$producto->categoria->name}}
-                            </h2>
-                        </div>
-
-                    @else
-                        <div
-                            class="w-full min-h-[243px] max-sm:min-h-[200px] bg-gray-100 flex items-center justify-center text-gray-500 ">
-                            <span>Sin imagen</span>
-                        </div>
-                    @endif
+                    <div class="relative min-h-[287px] max-sm:h-[200px]">
+                        <img src="{{ $producto->imagen_final }}" 
+                             alt="{{ $producto->name }}"
+                             class="w-full h-full object-cover rounded-t-sm">
+                        <h2 class="absolute left-3 bottom-2 text-[14px] font-semibold uppercase text-primary-orange">
+                            {{ $producto->categoria->name ?? '' }}
+                        </h2>
+                    </div>
                     <div class="h-1 bg-[#DEDFE0] mx-3"></div>
-                    <div class="flex flex-col mt-3  h-full max-sm:p-3 px-3">
-                        <h2 class="text-[14px] font-bold">{{$producto->code}}</h2>
-                        <p
-                            class="text-gray-800 text-[18px] max-sm:text-[14px] font-semibold transition-colors duration-300 ">
+                    <div class="flex flex-col mt-3 h-full max-sm:p-3 px-3">
+                        <h2 class="text-[14px] font-bold">{{ $producto->code }}</h2>
+                        <p class="text-gray-800 text-[18px] max-sm:text-[14px] font-semibold transition-colors duration-300">
                             {{ $producto->name }}
                         </p>
                     </div>

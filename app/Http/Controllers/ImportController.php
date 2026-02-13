@@ -25,17 +25,38 @@ class ImportController extends Controller
         ActualizarPreciosJob::dispatch($archivoPath, $lista_id);
     }
 
-    public function importarProductos(Request $request)
-    {
-        $request->validate([
-            'archivo' => 'required|mimes:xlsx,xls'
-        ]);
-        // Guardar archivo en almacenamiento temporal
-        $archivoPath = $request->file('archivo')->store('importaciones');
+ public function importarProductos(Request $request)
+{
+    $request->validate([
+        'archivo' => ['required', 'file', 'mimes:xlsx,xls', 'max:51200'],
+    ]);
 
-        // Encolar el Job
-        ImportarProductosDesdeExcelJob::dispatch($archivoPath);
-    }
+    \Log::info('IMPORT HIT', [
+        'orig_name' => $request->file('archivo')->getClientOriginalName(),
+        'size' => $request->file('archivo')->getSize(),
+        'disk' => config('filesystems.default'),
+    ]);
+
+    $archivoPath = $request->file('archivo')->store('importaciones');
+
+    \Log::info('IMPORT DISPATCH JOB', [
+        'archivoPath' => $archivoPath,
+        'resolvedPath' => \Storage::path($archivoPath),
+        'exists' => file_exists(\Storage::path($archivoPath)),
+    ]);
+
+    \App\Jobs\ImportarProductosDesdeExcelJob::dispatch($archivoPath);
+
+    return back()->with('success', 'Importación encolada. Revisá el log para el progreso.');
+}
+
+
+public function vincularImagenesProductos()
+{
+    VincularImagenesProductosJob::dispatch('public', 'productos');
+
+    return back()->with('success', 'Job encolado: Vincular imágenes de productos.');
+}
 
     public function importarClientes(Request $request)
     {

@@ -5,6 +5,8 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import DefaultLayout from '../defaultLayout';
+import axios from 'axios';
+
 
 export default function ProductosPrivada({ categorias, subcategorias }) {
     const { productos, auth, clienteSeleccionado } = usePage().props;
@@ -41,25 +43,26 @@ export default function ProductosPrivada({ categorias, subcategorias }) {
         );
     };
 
-    const handleFastBuy = (e) => {
-        e.preventDefault();
-        router.post(
-            route('compraRapida'),
-            {
-                code: e.target.code.value,
-                qty: Number(e.target.qty.value),
-            },
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    toast.success('Producto añadido al carrito');
-                },
-                onError: (errors) => {
-                    toast.error(errors.message || 'Error al añadir el producto');
-                },
-            },
-        );
-    };
+    const handleFastBuy = async (e) => {
+  e.preventDefault();
+
+  try {
+    const { data } = await axios.post(route('compraRapida'), {
+      code: e.target.code.value,
+      qty: Number(e.target.qty.value),
+    });
+
+    if (data.ok) {
+      toast.success(data.message || 'Producto añadido al carrito');
+    } else {
+      toast.error(data.message || 'Error al añadir el producto');
+    }
+  } catch (error) {
+    console.error(error);
+    toast.error('Error al conectar con el servidor');
+  }
+};
+
 
     const seleccionarCliente = (e) => {
         e.preventDefault();

@@ -32,8 +32,17 @@
                         <a href="{{ '/p/' . $producto->code }}"
                             class=" transition transform hover:-translate-y-1 hover:shadow-lg duration-300 h-[430px] flex flex-col max-sm:w-full rounded-sm border border-[#DEDFE0]">
                             <div class="w-full h-[287px] overflow-hidden relative">
-                                <img src="{{ $producto->imagenes->first()->image }}" alt="{{ $producto->name }}"
-                                    class="w-full h-[287px] object-contain p-2">
+                               @php
+    $imgProducto = optional($producto->imagenes->first())->image;
+    // Ajustá el campo de imagen de Categoria según tu DB: image / imagen / foto / etc.
+    $imgCategoria = optional($producto->categoria)->image;
+    $fallback = asset('images/producto-placeholder.jpg'); // opcional
+    $src = $imgProducto ?: ($imgCategoria ?: $fallback);
+@endphp
+
+<img src="{{ $src }}" alt="{{ $producto->name }}"
+     class="w-full h-[287px] object-contain p-2">
+
                                 <p class="absolute bottom-3 px-4 text-sm font-bold text-[#FF120B] uppercase">
                                     {{ $producto->categoria->name }}
                                 </p>

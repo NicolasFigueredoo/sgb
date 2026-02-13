@@ -44,18 +44,13 @@
                             @endforeach
                         </div>
                         <!-- Main Image -->
-                        <div class="flex items-center w-full justify-center h-[496px] max-sm:h-[280px] border rounded-sm">
-                            @if ($producto->imagenes->first())
-                                <img id="mainImage" class="rounded-sm" src="{{ $producto->imagenes->first()->image }}"
-                                    alt="{{ $producto->titulo }}"
-                                    class="w-full h-full object-cover object-center transition-opacity duration-300 ease-in-out">
-                            @else
-                                <div
-                                    class="w-full h-full bg-gray-100 text-gray-400 flex items-center justify-center transition-opacity duration-300 ease-in-out">
-                                    <span class="text-sm max-sm:text-xs">Sin imagen disponible</span>
-                                </div>
-                            @endif
-                        </div>
+    <div class="flex items-center w-full justify-center h-[496px] max-sm:h-[280px] border rounded-sm">
+    <img id="mainImage"
+         src="{{ $producto->imagen_final }}"
+         alt="{{ $producto->name }}"
+         class="w-full h-full object-cover object-center rounded-sm">
+</div>
+
 
                         <!-- Thumbnails -->
 
@@ -85,7 +80,7 @@
 
                         <a href="{{ route('contacto', ['mensaje' => $producto->name]) }}"
                             class="w-full flex justify-center rounded-sm items-center bg-primary-orange text-white font-bold h-[41px] max-sm:h-[36px] max-sm:text-sm">
-                            Consultar
+                            CONSULTAR
                         </a>
                     </div>
                 </div>
@@ -102,23 +97,17 @@
                                 class=" transition transform hover:-translate-y-1 hover:shadow-lg duration-300
                                                                                                                                                                                                                                                                             h-[420px] max-sm:h-auto flex flex-col w-[288px] max-sm:w-full rounded-sm border border-[#DEDFE0]">
                                 <div class="h-full flex flex-col">
-                                    @if ($prodRelacionado->imagenes->count() > 0)
-                                        <div class="relative min-h-[287px] max-sm:h-[200px]">
-                                            <img src="{{ $prodRelacionado->imagenes->first()->image }}"
-                                                alt="{{ $prodRelacionado->name }}"
-                                                class=" w-full h-full  object-contain rounded-t-sm">
-                                            <h2
-                                                class="absolute left-3 bottom-2 text-[14px] font-semibold uppercase text-primary-orange">
-                                                {{$prodRelacionado->categoria->name}}
-                                            </h2>
-                                        </div>
+ <div class="relative min-h-[287px] max-sm:h-[200px]">
+    <img src="{{ $prodRelacionado->imagen_final }}"
+         alt="{{ $prodRelacionado->name }}"
+         class="w-full h-full object-contain rounded-t-sm">
 
-                                    @else
-                                        <div
-                                            class="w-full min-h-[243px] max-sm:min-h-[200px] bg-gray-100 flex items-center justify-center text-gray-500 ">
-                                            <span>Sin imagen</span>
-                                        </div>
-                                    @endif
+    <h2 class="absolute left-3 bottom-2 text-[14px] font-semibold uppercase text-primary-orange">
+        {{ $prodRelacionado->categoria->name ?? '' }}
+    </h2>
+</div>
+
+
                                     <div class="h-1 bg-[#DEDFE0] mx-3"></div>
                                     <div class="flex flex-col justify-evenly h-full max-sm:p-3 px-3">
                                         <div class="flex flex-row justify-between">
