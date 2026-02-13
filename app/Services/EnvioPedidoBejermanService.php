@@ -31,9 +31,16 @@ class EnvioPedidoBejermanService
 
             DB::connection('bejerman')->transaction(function () use ($pedido, &$cabeceraId) {
 
-                // ✅ INSERT con OUTPUT para obtener el ID
-                $resultado = DB::connection('bejerman')->select("
+                // ✅ OBTENER PRÓXIMO ID MANUALMENTE
+                $proximoId = DB::connection('bejerman')->select("
+                    SELECT ISNULL(MAX(cve_ID), 0) + 1 as proximo_id 
+                    FROM CabVenta
+                ")[0]->proximo_id;
+
+                // ✅ INSERT CON ID MANUAL
+                DB::connection('bejerman')->insert("
                     INSERT INTO CabVenta (
+                        cve_ID,
                         cveemp_Codigo, cvesuc_Cod, cve_CodCli, cvecli_CodIN, cvecli_RazSoc,
                         cvecli_CUIT, cvecli_NroIB, cve_NroCuota, cveptr_Cod, cvepre_Cod,
                         cve_CodPvt, cvepvt_CodIN, cve_Letra, cvetco_Cod, cve_Nro, cvetic_Cod,
@@ -49,8 +56,8 @@ class EnvioPedidoBejermanService
                         cveven_Cod, cve_ConClaus, cvedco_Cod, cvedc1_Cod, cvedc2_Cod,
                         cvetal_Cod, cveemp_CodigoSCV, cvesuc_CodSCV, cvertd_MaxLinDet
                     )
-                    OUTPUT INSERTED.cve_ID
                     VALUES (
+                        ?,
                         'JOYR', ' ', ?, ?, ?, ?, ' ', ' ', 'VEN', ' ',
                         '00003', '00003', 'X', 'NP', '00000001', 'B', ' ',
                         GETDATE(), GETDATE(), GETDATE(), GETDATE(),
@@ -61,6 +68,7 @@ class EnvioPedidoBejermanService
                         'FAE', 'JOYR', ' ', 0
                     )
                 ", [
+                    $proximoId,
                     $pedido->user->bejerman_cliente_cod,
                     $pedido->user->bejerman_cliente_cod,
                     $pedido->user->razon_social ?? 'Cliente',
@@ -72,7 +80,7 @@ class EnvioPedidoBejermanService
                     $pedido->total,
                 ]);
 
-                $cabeceraId = $resultado[0]->cve_ID;
+                $cabeceraId = $proximoId;
 
                 // Partida por defecto
                 $partidaDefault = '10-2021';
