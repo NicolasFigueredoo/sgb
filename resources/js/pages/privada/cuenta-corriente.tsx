@@ -1,4 +1,4 @@
-import CuentaCorrienteRow from '@/Components/CuentaCorrienteRow';
+import CuentaCorrienteRow from '@/components/CuentaCorrienteRow';
 import { Head, usePage } from '@inertiajs/react';
 import DefaultLayout from '../defaultLayout';
 
