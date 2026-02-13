@@ -105,7 +105,7 @@ class EnvioPedidoBejermanService
 
 
                 $cabeceraId = DB::connection('bejerman')
-    ->select("SELECT IDENT_CURRENT('CabVenta') as id")[0]->id;
+    ->select("SELECT CAST(IDENT_CURRENT('CabVenta') AS INT) as id")[0]->id;
 
                 // ✅ lo que encontraste en la DB
                 $partidaDefault = '10-2021';
