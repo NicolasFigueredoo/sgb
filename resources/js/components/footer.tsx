@@ -65,8 +65,8 @@ const Footer = () => {
             <div className="mx-auto h-full w-full max-w-[1200px] grid grid-cols-12 gap-x-20 items-start justify-items-start max-sm:gap-10 px-4 py-10 lg:px-0 lg:py-26">
                 {/* Logo y redes sociales */}
                 <div className="col-span-2 flex h-full flex-col items-center gap-4">
-                    <Link href="/">
-                        <img src={logos?.logo_principal || ''} alt="Logo secundario" className="max-w-[124px] max-h-[84px] sm:max-w-full" />
+                    <Link href="/" >
+                        <img src={logos?.logo_principal || ''} alt="Logo secundario" className="w-[124px] h-[71px] sm:max-w-full" />
                     </Link>
 
                     <div className="flex flex-row items-center justify-center gap-4 sm:gap-2">

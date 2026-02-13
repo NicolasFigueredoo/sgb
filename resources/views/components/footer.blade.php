@@ -4,7 +4,7 @@
         class="mx-auto  h-full w-full max-w-[1200px] grid grid-cols-12 gap-x-20 items-start justify-items-start  max-sm:gap-10 px-4 py-10 lg:flex-row lg:items-start  lg:px-0 lg:py-26">
         {{-- Logo y redes sociales --}}
         <div class="col-span-2 flex h-full flex-col items-center gap-4">
-            <a href="/">
+            <a href="/" class="w-[200px]">
                 <img src="{{ $logos->logo_principal ?? '' }}" alt="Logo secundario"
                     class="max-w-[124px] max-h-[84px] sm:max-w-full" />
             </a>
