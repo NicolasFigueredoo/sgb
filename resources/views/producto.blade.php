@@ -1,7 +1,7 @@
 @extends('layouts.default')
 @section('title', 'SR33 - ' . $producto->code)
 
-@section('description', $producto->name ?? "")
+@section('description', $producto->name ?? '')
 
 
 @section('content')
@@ -11,13 +11,12 @@
             <div class="text-black">
                 <a href="{{ route('home') }}" class="hover:underline transition-all duration-300 font-bold">Inicio</a>
                 <span class="">></span>
-                <a href="{{ route('productos') }}"
-                    class="hover:underline transition-all duration-300 font-bold">Productos</a>
+                <a href="{{ route('productos') }}" class="hover:underline transition-all duration-300 font-bold">Productos</a>
                 <span class="">></span>
                 <a href="{{ route('productos', ['id' => $producto->categoria->id]) }}"
                     class="hover:underline transition-all duration-300 font-bold">{{ $producto->categoria->name ?? '' }}</a>
                 <span class="">></span>
-                <a href="{{"/" . $producto->code }}"
+                <a href="{{ '/' . $producto->code }}"
                     class="font-light hover:underline transition-all duration-300">{{ $producto->code ?? '' }}</a>
             </div>
         </div>
@@ -44,88 +43,135 @@
                             @endforeach
                         </div>
                         <!-- Main Image -->
-    <div class="flex items-center w-full justify-center h-[496px] max-sm:h-[280px] border rounded-sm">
-    <img id="mainImage"
-         src="{{ $producto->imagen_final }}"
-         alt="{{ $producto->name }}"
-         class="w-full h-full object-cover object-center rounded-sm">
-</div>
+                        <div class="flex items-center w-full justify-center h-[496px] max-sm:h-[280px] border rounded-sm">
+                            <img id="mainImage" src="{{ $producto->imagen_final }}" alt="{{ $producto->name }}"
+                                class="w-full h-full object-cover object-center rounded-sm">
+                        </div>
 
 
                         <!-- Thumbnails -->
 
                     </div>
 
-              <!-- Product Info -->
-<div class="w-full flex flex-col min-h-full justify-between max-sm:w-full max-sm:mt-6">
-    <div>
-        <h3 class="text-primary-orange text-[16px] font-bold uppercase">
-            {{$producto->categoria->name}}
-        </h3>
-        <h1 class="text-[28px] font-semibold leading-[1] max-sm:text-xl max-sm:leading-tight pb-4">
-            {{ $producto->name }}
-        </h1>
-        
-        <p class="text-gray-600 text-[16px] mb-6 pb-6 border-b">{{ $producto->code }}</p>
-        
-        <!-- ✅ CARACTERÍSTICAS -->
-        <div class="mb-6">
-            <h2 class="text-[16px] font-bold mb-4 uppercase">Características</h2>
-            
-            <div class="flex flex-col">
+                    <!-- Product Info -->
+                    <div class="w-full flex flex-col min-h-full justify-between max-sm:w-full max-sm:mt-6">
+                        <div>
+                            <h3 class="text-primary-orange text-[16px] font-bold uppercase">
+                                {{ $producto->categoria->name }}
+                            </h3>
+                            <h1 class="text-[28px] font-semibold leading-[1] max-sm:text-xl max-sm:leading-tight pb-4">
+                                {{ $producto->name }}
+                            </h1>
 
-                    @if ($producto->code_oem)
-                <div class="grid grid-cols-2 gap-4 py-3 border-b border-gray-100">
-                    <div class="text-[16px]">Codigo Alternativo</div>
-                    <div class="text-[16px] text-gray-700">{{ $producto->code_oem }}</div>
-                </div>
-                @endif
+                            <p class="text-gray-600 text-[16px] mb-6 pb-6 border-b">{{ $producto->code }}</p>
 
-                <!-- Descripción Técnica -->
-                @if ($producto->name)
-                <div class="grid grid-cols-2 gap-4 py-3 border-b border-gray-100">
-                    <div class="text-[16px]">Descripción Técnica</div>
-                    <div class="text-[16px] text-gray-700">{{ $producto->name }}</div>
-                </div>
-                @endif
-                
-                <!-- Código de Barras -->
-                @if ($producto->codigo_barras)
-                <div class="grid grid-cols-2 gap-4 py-3 border-b border-gray-100">
-                    <div class="text-[16px]">Código de Barras</div>
-                    <div class="text-[16px] text-gray-700">{{ $producto->codigo_barras }}</div>
-                </div>
-                @endif
-                
-                <!-- Unidades por Pack -->
-                @if ($producto->unidad_pack > 1)
-                <div class="grid grid-cols-2 gap-4 py-3">
-                    <div class="text-[16px]">Unidades por Pack</div>
-                    <div class="text-[16px] font-semibold text-primary-orange">{{ $producto->unidad_pack }} unidades</div>
-                </div>
-                @endif
-            </div>
-        </div>
-        
-        <!-- Descripción adicional -->
-        @if ($producto->desc)
-        <div class="mb-6">
-            <p class="text-[16px] text-gray-700">{{$producto->desc}}</p>
-        </div>
-        @endif
-    </div>
+                            @php
+                                $row = 'grid grid-cols-[180px_1fr] gap-6 py-2 border-b border-gray-100 items-start';
+                                $label = 'text-[15px] text-gray-800';
+                                $value = 'text-[15px] text-gray-700 break-words text-right max-sm:text-left';
+                            @endphp
 
-    <div class="flex gap-3 max-sm:flex-col">
-        {{-- <a href="#" 
+
+                            <!-- ✅ CARACTERÍSTICAS -->
+                            <div class="mb-6">
+                                <h2 class="text-[16px] font-bold mb-4 uppercase">Características</h2>
+
+                                @php
+    $modelos = $producto->modelos
+        ->map(fn($pm) => $pm->modelo->name ?? $pm->modelo->nombre ?? null)
+        ->filter()
+        ->unique()
+        ->values();
+
+    $motores = $producto->motores
+        ->map(fn($pm) => $pm->motor->name ?? $pm->motor->nombre ?? null)
+        ->filter()
+        ->unique()
+        ->values();
+@endphp
+
+
+                                <div class="flex flex-col">
+
+                                    @if ($producto->code_oem)
+                                        <div class="{{ $row }}">
+                                            <div class="{{ $label }}">Código Alternativo</div>
+                                            <div class="{{ $value }}">{{ $producto->code_oem }}</div>
+                                        </div>
+                                    @endif
+
+                                    @if ($producto->marca)
+                                        <div class="{{ $row }}">
+                                            <div class="{{ $label }}">Marca</div>
+                                            <div class="{{ $value }}">
+                                                {{ $producto->marca->name ?? ($producto->marca->nombre ?? '') }}</div>
+                                        </div>
+                                    @endif
+
+                                    @if ($modelos->count())
+                                        <div class="{{ $row }}">
+                                            <div class="{{ $label }}">Modelos</div>
+                                            <div class="{{ $value }}">{{ $modelos->join(', ') }}</div>
+                                        </div>
+                                    @endif
+
+                                    @if ($motores->count())
+                                        <div class="{{ $row }}">
+                                            <div class="{{ $label }}">Motores</div>
+                                            <div class="{{ $value }}">{{ $motores->join(', ') }}</div>
+                                        </div>
+                                    @endif
+
+                                    @if ($producto->medidas)
+                                        <div class="{{ $row }}">
+                                            <div class="{{ $label }}">Medidas</div>
+                                            <div class="{{ $value }}">{{ $producto->medidas }}</div>
+                                        </div>
+                                    @endif
+
+                                  
+
+                                    {{-- Código de Barras --}}
+                                    @if ($producto->codigo_barras)
+                                        <div class="{{ $row }}">
+                                            <div class="{{ $label }}">Código de Barras</div>
+                                            <div class="{{ $value }}">{{ $producto->codigo_barras }}</div>
+                                        </div>
+                                    @endif
+
+                                    {{-- Unidades por Pack --}}
+                                    @if ($producto->unidad_pack > 1)
+                                        <div class="grid grid-cols-[180px_1fr] gap-6 py-2 items-start">
+                                            <div class="{{ $label }}">Unidades por Pack</div>
+                                            <div
+                                                class="text-[15px] font-semibold text-primary-orange text-right max-sm:text-left">
+                                                {{ $producto->unidad_pack }} unidades
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                </div>
+                            </div>
+
+                            <!-- Descripción adicional -->
+                            @if ($producto->desc)
+                                <div class="mb-6">
+                                    <p class="text-[16px] text-gray-700">{{ $producto->desc }}</p>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="flex gap-3 max-sm:flex-col">
+                            {{-- <a href="#" 
             class="flex-1 flex justify-center rounded-sm items-center border-2 border-primary-orange text-primary-orange font-bold h-[41px] max-sm:h-[36px] max-sm:text-sm hover:bg-primary-orange hover:text-white transition-colors">
             FICHA TÉCNICA
         </a> --}}
-        <a href="{{ route('contacto', ['mensaje' => $producto->code . ' - ' . $producto->name]) }}"
-            class="flex-1 flex justify-center rounded-sm items-center bg-primary-orange text-white font-bold h-[41px] max-sm:h-[36px] max-sm:text-sm hover:bg-orange-600 transition-colors">
-            CONSULTAR
-        </a>
-    </div>
-</div>
+                            <a href="{{ route('contacto', ['mensaje' => $producto->code . ' - ' . $producto->name]) }}"
+                                class="flex-1 flex justify-center rounded-sm items-center bg-primary-orange text-white font-bold h-[41px] max-sm:h-[36px] max-sm:text-sm hover:bg-orange-600 transition-colors">
+                                CONSULTAR
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
 
@@ -136,19 +182,19 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 max-sm:grid-cols-1 max-sm:gap-4">
                         @forelse($productosRelacionados as $prodRelacionado)
-                            <a href="{{ "/p/" . $prodRelacionado->code }}"
+                            <a href="{{ '/p/' . $prodRelacionado->code }}"
                                 class=" transition transform hover:-translate-y-1 hover:shadow-lg duration-300
                                                                                                                                                                                                                                                                             h-[420px] max-sm:h-auto flex flex-col w-[288px] max-sm:w-full rounded-sm border border-[#DEDFE0]">
                                 <div class="h-full flex flex-col">
- <div class="relative min-h-[287px] max-sm:h-[200px]">
-    <img src="{{ $prodRelacionado->imagen_final }}"
-         alt="{{ $prodRelacionado->name }}"
-         class="w-full h-full object-contain rounded-t-sm">
+                                    <div class="relative min-h-[287px] max-sm:h-[200px]">
+                                        <img src="{{ $prodRelacionado->imagen_final }}" alt="{{ $prodRelacionado->name }}"
+                                            class="w-full h-full object-contain rounded-t-sm">
 
-    <h2 class="absolute left-3 bottom-2 text-[14px] font-semibold uppercase text-primary-orange">
-        {{ $prodRelacionado->categoria->name ?? '' }}
-    </h2>
-</div>
+                                        <h2
+                                            class="absolute left-3 bottom-2 text-[14px] font-semibold uppercase text-primary-orange">
+                                            {{ $prodRelacionado->categoria->name ?? '' }}
+                                        </h2>
+                                    </div>
 
 
                                     <div class="h-1 bg-[#DEDFE0] mx-3"></div>

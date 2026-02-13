@@ -33,8 +33,8 @@ class AppServiceProvider extends ServiceProvider
                 'logos' => Logos::first()
             ]);
         });
-        if (app()->environment('production')) {
-            URL::forceScheme(scheme: 'https');
-        }
+        // if (app()->environment('production')) {
+        //     URL::forceScheme(scheme: 'https');
+        // }
     }
 }
