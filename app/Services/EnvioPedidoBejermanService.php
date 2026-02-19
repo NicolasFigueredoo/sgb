@@ -38,12 +38,14 @@ class EnvioPedidoBejermanService
             ")[0]->proximo_id;
 
             // ✅ OBTENER PRÓXIMO NÚMERO DE NP (correlativo real de Bejerman)
-            $proximoNro = DB::connection('bejerman')->select("
-                SELECT ISNULL(MAX(CAST(cve_Nro AS INT)), 21311) + 1 as proximo_nro
-                FROM CabVenta
-                WHERE cvetco_Cod = 'NP' AND cveptr_Cod = 'VEN'
-            ")[0]->proximo_nro;
-            $proximoNroFormateado = str_pad($proximoNro, 8, '0', STR_PAD_LEFT);
+         // ✅ OBTENER PRÓXIMO NÚMERO DE NP
+$proximoNro = DB::connection('bejerman')->select("
+    SELECT ISNULL(MAX(CAST(cve_Nro AS INT)), 21311) + 1 as proximo_nro
+    FROM CabVenta
+    WHERE cvetco_Cod = 'NP' AND cveptr_Cod = 'VEN'
+    AND CAST(cve_Nro AS INT) >= 21311
+")[0]->proximo_nro;
+$proximoNroFormateado = str_pad($proximoNro, 8, '0', STR_PAD_LEFT);
 
             // ✅ INSERT CON ID Y NÚMERO DINÁMICO
             DB::connection('bejerman')->insert("
