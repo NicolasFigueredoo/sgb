@@ -69,33 +69,33 @@ class PedidoController extends Controller
             // Crear pedido
             $pedido = Pedido::create($data);
 
-            // **ENVIAR AUTOMÁTICAMENTE A BEJERMAN**
-            if ($user && $user->bejerman_cliente_cod) {
-                $resultado = $this->envioPedidoService->enviarPedido($pedido);
-
-                if ($resultado['success']) {
-                    \Log::info("✅ Pedido #{$pedido->id} enviado a Bejerman", [
-                        'bejerman_id' => $resultado['bejerman_id']
-                    ]);
-                } else {
-                    \Log::warning("⚠️ No se pudo enviar pedido #{$pedido->id} a Bejerman", [
-                        'error' => $resultado['error']
-                    ]);
-                }
-            }
-
+            // ✅ COMMIT ANTES de Bejerman — evita conflicto de transacciones anidadas
             DB::commit();
-
-            return redirect()->back()->with([
-                'pedido_id' => $pedido->id,
-                'message' => 'Pedido creado y enviado a Bejerman exitosamente'
-            ]);
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('❌ Error creando pedido', ['error' => $e->getMessage()]);
-
             return back()->with('error', 'Error al crear el pedido: ' . $e->getMessage());
         }
+
+        // ✅ ENVIAR A BEJERMAN FUERA de la transacción MySQL
+        if ($user && $user->bejerman_cliente_cod) {
+            $resultado = $this->envioPedidoService->enviarPedido($pedido);
+
+            if ($resultado['success']) {
+                \Log::info("✅ Pedido #{$pedido->id} enviado a Bejerman", [
+                    'bejerman_id' => $resultado['bejerman_id']
+                ]);
+            } else {
+                \Log::warning("⚠️ No se pudo enviar pedido #{$pedido->id} a Bejerman", [
+                    'error' => $resultado['error']
+                ]);
+            }
+        }
+
+        return redirect()->back()->with([
+            'pedido_id' => $pedido->id,
+            'message' => 'Pedido creado y enviado a Bejerman exitosamente'
+        ]);
     }
 
     /**
